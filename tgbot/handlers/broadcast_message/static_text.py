@@ -1,13 +1,17 @@
-broadcast_command = '/broadcast'
-broadcast_no_access = "Sorry, you don't have access to this function."
-broadcast_wrong_format = f'To send message to all your users,' \
-                         f' type {broadcast_command} command with text separated by space.\n' \
-                         f'For example:\n' \
-                         f'{broadcast_command} Hello, my users! This <b>bold text</b> is for you, ' \
-                         f'as well as this <i>italic text.</i>\n\n' \
-                         f'Examples of using <code>HTML</code> style you can found <a href="https://core.telegram.org/bots/api#html-style">here</a>.'
-confirm_broadcast = "Confirm ✅"
-decline_broadcast = "Decline ❌"
-message_is_sent = "Message is sent ✅"
-declined_message_broadcasting = "Message broadcasting is declined ❌"
-error_with_html = "Can't parse your text in <code>HTML</code> style. Reason: \n{reason}"
+broadcast_command = "/broadcast"
+broadcast_no_access = "Извините, у вас нет доступа к этой функции."
+broadcast_wrong_format = (
+    f"Чтобы отправить сообщение всем вашим пользователям, "
+    f"введите команду {broadcast_command} с текстом, разделенным пробелами.\n"
+    f"Например:\n"
+    f"{broadcast_command} Привет, мои пользователи! Этот <b>жирный текст</b> для вас, "
+    f"а также этот <i>курсивный текст.</i>\n\n"
+    f'Примеры использования стиля <code>HTML</code> вы можете найти <a href="https://core.telegram.org/bots/api#html-style">здесь</a>.'
+)
+confirm_broadcast = "Подтвердить ✅"
+decline_broadcast = "Отклонить ❌"
+message_is_sent = "Сообщение отправлено ✅"
+declined_message_broadcasting = "Рассылка сообщений отклонена ❌"
+error_with_html = (
+    "Не удается обработать ваш текст со стилем <code>HTML</code>. Причина: \n{reason}"
+)
