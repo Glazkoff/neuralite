@@ -28,7 +28,7 @@ def setup_dispatcher(dp):
     Adding handlers for events from Telegram
     """
     # summarization
-    dp.add_handler(CommandHandler("summ", summarization_handlers.command_start))
+    dp.add_handler(CommandHandler("summ", summarization_handlers.begin_summarization))
 
     # onboarding
     dp.add_handler(CommandHandler("start", onboarding_handlers.command_start))
