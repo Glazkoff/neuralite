@@ -19,6 +19,6 @@ jobs:
         uses: idoberko2/dokku-deploy-github-action@v1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          dokku-host: "31.129.96.194"
+          dokku-host: "neuralite.ru"
           app-name: "dtb"
           git-push-flags: "--force"
