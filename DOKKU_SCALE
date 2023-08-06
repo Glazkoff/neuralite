@@ -1,5 +1,5 @@
 nginx=1
-web=0
-llm-api=0
+web=1
+llm-api=1
 worker=0
 beat=0
