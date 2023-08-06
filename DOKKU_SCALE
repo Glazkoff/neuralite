@@ -1,3 +1,4 @@
 web=1
+llm-api=1
 worker=0
 beat=0
