@@ -95,8 +95,6 @@ services:
     image: nginx:stable
     ports:
       - "8000:80"
-    depends_on:
-      - backend
     volumes:
       - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
     logging:
