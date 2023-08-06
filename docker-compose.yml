@@ -14,11 +14,11 @@ services:
       - ./.env
     ports:
       - "5433:5432"
-  
+
   redis:
     image: redis:alpine
     container_name: dtb_redis
-  
+
   web:
     build:
       context: .
@@ -34,7 +34,7 @@ services:
       - ./.env
     depends_on:
       - db
-  
+
   bot:
     build:
       context: .
@@ -46,7 +46,7 @@ services:
       - ./.env
     depends_on:
       - web
-  
+
   celery:
     build:
       context: .
@@ -61,7 +61,7 @@ services:
     depends_on:
       - redis
       - web
-  
+
   celery-beat:
     build:
       context: .
@@ -77,6 +77,19 @@ services:
       - redis
       - celery
       - web
+
+  llm-api:
+    build:
+      context: ./llm_api
+      dockerfile: Dockerfile
+    ports:
+      - "8001:80"
+    volumes:
+      - ./llm_api:/app
+    env_file:
+      - ./.env
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
