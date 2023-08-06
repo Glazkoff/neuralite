@@ -1,5 +1,6 @@
 import json
 import logging
+import requests
 from django.views import View
 from django.http import JsonResponse
 from telegram import Update
@@ -20,6 +21,28 @@ def process_telegram_event(update_json):
 
 def index(request):
     return JsonResponse({"error": "sup hacker"})
+
+
+def test(request):
+    url = "http://llm-api:80/tasks/"
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return JsonResponse(
+                {"message": "Error sending request to the other container."}, status=500
+            )
+
+        # Convert bytes to a JSON-serializable dictionary
+        result_data = json.loads(response.content)
+
+        return JsonResponse(
+            {"message": "Request sent successfully.", "result": result_data}
+        )
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({"message": f"Error: {e}"}, status=500)
 
 
 class TelegramBotWebhookView(View):
