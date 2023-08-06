@@ -31,6 +31,5 @@ sentry-sdk
 
 # For API
 fastapi
-uvicorn
 openai
 python-dotenv
