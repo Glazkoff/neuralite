@@ -1,5 +1,5 @@
 import openai
-from models import SummarizationTask
+from .models import SummarizationTask
 
 
 async def summarization_from_openai(task: SummarizationTask):
