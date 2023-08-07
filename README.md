@@ -270,3 +270,5 @@ dokku logs dtb -t
 ```
 
 ---
+
+https://nerdschalk.com/chatgpt-prompts-to-summarize-text/
