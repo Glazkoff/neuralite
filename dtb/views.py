@@ -24,7 +24,7 @@ def index(request):
 
 
 def test(request):
-    url = "http://llm-api:8001/tasks/"
+    url = "http://dtb.llm-api:8001/tasks/"
     headers = {"Content-Type": "application/json"}
 
     try:
