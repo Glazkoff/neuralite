@@ -24,7 +24,7 @@ def index(request):
 
 
 def test(request):
-    url = "http://llm-api:80/tasks/"
+    url = "http://llm-api:8001/tasks/"
     headers = {"Content-Type": "application/json"}
 
     try:
