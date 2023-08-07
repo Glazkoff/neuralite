@@ -1,7 +1,7 @@
 import openai
 from fastapi import FastAPI
-from models import SummarizationTask
-from api_requests import summarization_from_openai
+from .models import SummarizationTask
+from .api_requests import summarization_from_openai
 
 app = FastAPI()
 
