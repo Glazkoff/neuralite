@@ -26,4 +26,5 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("super_secter_webhook/", csrf_exempt(views.TelegramBotWebhookView.as_view())),
     path("test/", views.test, name="test"),
+    path("test2/", views.test2, name="test2"),
 ]
