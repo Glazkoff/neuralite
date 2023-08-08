@@ -58,21 +58,25 @@ def test2(request):
             headers=headers,
         )
 
-        if response.status_code < 200 and response.status_code > 399:
+        try:
+            # Convert bytes to a JSON-serializable dictionary
+            result_data = json.loads(response.content)
+
             return JsonResponse(
                 {
-                    "message": "Error sending request to the other container.",
+                    "message": "Request sent successfully.",
                     "code": response.status_code,
-                },
-                status=500,
+                    "result": result_data,
+                }
+            )
+        except Exception as e:
+            return JsonResponse(
+                {
+                    "e": str(e),
+                    "code": response.status_code,
+                }
             )
 
-        # Convert bytes to a JSON-serializable dictionary
-        result_data = json.loads(response.content)
-
-        return JsonResponse(
-            {"message": "Request sent successfully.", "result": result_data}
-        )
     except requests.exceptions.RequestException as e:
         return JsonResponse({"message": f"Error: {e}"}, status=500)
 
