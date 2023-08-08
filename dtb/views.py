@@ -58,9 +58,13 @@ def test2(request):
             headers=headers,
         )
 
-        if response.status_code != 200:
+        if response.status_code < 200 and response.status_code > 399:
             return JsonResponse(
-                {"message": "Error sending request to the other container."}, status=500
+                {
+                    "message": "Error sending request to the other container.",
+                    "code": response.status_code,
+                },
+                status=500,
             )
 
         # Convert bytes to a JSON-serializable dictionary
