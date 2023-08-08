@@ -45,6 +45,34 @@ def test(request):
         return JsonResponse({"message": f"Error: {e}"}, status=500)
 
 
+def test2(request):
+    url = "http://dtb.llm-api:8001/tasks/"
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        response = requests.post(
+            url,
+            data={
+                "text": "Когда человек сознательно или интуитивно выбирает себе в жизни какую-то цель, жизненную задачу, он невольно дает себе оценку. По тому, ради чего человек живет, можно судить и о его самооценке - низкой или высокой. Если человек живет, чтобы приносить людям добро, облегчать их страдания, давать людям радость, то он оценивает себя на уровне этой своей человечности. Он ставит себе цель, достойную человека. Только такая цель позволяет человеку прожить свою жизнь с достоинством и получить настоящую радость. Да, радость! Подумайте: если человек ставит себе задачей увеличивать в жизни добро, приносить людям счастье, какие неудачи могут его постигнуть? Не тому помочь? Но много ли людей не нуждаются в помощи? Если жить только для себя, своими мелкими заботами о собственном благополучии, то от прожитого не останется и следа. Если же жить для других, то другие сберегут то, чему служил, чему отдавал силы. Можно по-разному определять цель своего существования, но цель должна быть. Надо иметь и принципы в жизни. Одно правило в жизни должно быть у каждого человека, в его цели жизни, в его принципах жизни, в его поведении: надо прожить жизнь с достоинством, чтобы не стыдно было вспоминать."
+            },
+            headers=headers,
+        )
+
+        if response.status_code != 200:
+            return JsonResponse(
+                {"message": "Error sending request to the other container."}, status=500
+            )
+
+        # Convert bytes to a JSON-serializable dictionary
+        result_data = json.loads(response.content)
+
+        return JsonResponse(
+            {"message": "Request sent successfully.", "result": result_data}
+        )
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({"message": f"Error: {e}"}, status=500)
+
+
 class TelegramBotWebhookView(View):
     # WARNING: if fail - Telegram webhook will be delivered again.
     # Can be fixed with async celery task execution
