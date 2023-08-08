@@ -7,7 +7,12 @@ app = FastAPI()
 
 openai.api_key = "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"
 
-tasks = []
+tasks = [
+    {
+        "id": 0,
+        "message": "test",
+    }
+]
 
 
 @app.get("/tasks/")

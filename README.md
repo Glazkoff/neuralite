@@ -272,3 +272,24 @@ dokku logs dtb -t
 ---
 
 https://nerdschalk.com/chatgpt-prompts-to-summarize-text/
+
+# Running multiple services on Dokku
+
+https://www.joseferben.com/posts/running-multiple-services-on-dokku/
+
+```bash
+dokku ps:scale dtb web=1 llm-api=1
+dokku network:create my-network
+dokku network:set dtb attach-post-deploy my-network
+dokku ps:restart dtb
+```
+
+HTTP requests between services:
+
+```
+<!-- From web to llm-api -->
+http://appName.processName:innerPortName
+
+<!-- Пример -->
+http://dtb.llm-api:8001
+```
