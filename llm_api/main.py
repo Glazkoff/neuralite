@@ -1,3 +1,4 @@
+import os
 import openai
 from fastapi import FastAPI
 from .models import SummarizationTask
@@ -5,7 +6,7 @@ from .api_requests import summarization_from_openai
 
 app = FastAPI()
 
-openai.api_key = "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"
+openai.api_key = os.environ.get("OPEN_AI_TOKEN")
 
 tasks = [
     {
