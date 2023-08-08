@@ -22,7 +22,11 @@ async def read_tasks():
 
 @app.post("/tasks/")
 async def create_task(task: SummarizationTask):
-    # task.ai_summarization = await summarization_from_openai(task)
-    task.ai_summarization = "test"
+    try:
+        result = await summarization_from_openai(task)
+        task.ai_summarization = result
+    except Exception as e:
+        task.ai_summarization = e
+
     tasks.append(task)
     return {"id": len(tasks), "ai_summarization": task.ai_summarization}
