@@ -60,13 +60,13 @@ def test2(request):
 
         try:
             # Convert bytes to a JSON-serializable dictionary
-            result_data = json.loads(response.content)
+            # result_data = json.loads(response.content)
 
             return JsonResponse(
                 {
                     "message": "Request sent successfully.",
                     "code": response.status_code,
-                    "result": result_data,
+                    "result": response.json(),
                 }
             )
         except Exception as e:
