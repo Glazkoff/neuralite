@@ -23,12 +23,22 @@ def begin_summarization(update: Update, context: CallbackContext) -> None:
     task = {
         "user": user,
         "input_text": update.message.text.replace(f"{static_text.summ_command} ", ""),
-        "telegram_msg_id": update.message.message_id,
+        "user_telegram_msg_id": update.message.message_id,
     }
     created_task = SummarizationTask.objects.create(**task)
 
-    context.bot.send_message(
+    bot_message = context.bot.send_message(
         chat_id=user_id,
         text=static_text.please_wait.format(task_id=created_task.pk),
         parse_mode=ParseMode.HTML,
+    )
+
+    created_task.bot_telegram_msg_id = bot_message.message_id
+    created_task.save()
+
+    print(
+        "created_task",
+        created_task,
+        created_task.bot_telegram_msg_id,
+        bot_message.message_id,
     )

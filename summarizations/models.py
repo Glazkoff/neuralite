@@ -4,7 +4,8 @@ from utils.models import CreateUpdateTracker
 
 
 class SummarizationTask(CreateUpdateTracker):
-    telegram_msg_id = models.PositiveBigIntegerField("ID сообщения в Telegram")
+    user_telegram_msg_id = models.PositiveBigIntegerField("ID сообщения пользователя")
+    bot_telegram_msg_id = models.PositiveBigIntegerField("ID сообщения бота", null=True)
     user = models.ForeignKey(
         User, verbose_name="Пользователь Telegram", on_delete=models.CASCADE
     )
@@ -12,7 +13,8 @@ class SummarizationTask(CreateUpdateTracker):
     openai_summarized_text = models.TextField(
         "Текст суммаризации (OpenAI API)", blank=True
     )
-    done = models.BooleanField("Задача по суммаризации завершена", default=False)
+    last_queue_task_id = models.CharField(max_length=50, blank=True)
+    done = models.BooleanField("Задача завершена", default=False)
 
     def __str__(self):
         return f"Задача суммаризации #{self.pk}"
