@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 
-from app.models.schemas.task import SummarizationTaskCreate, SummarizationTaskResponse
-from app.models.domain.task import SummarizationTask
-from app.core.openai_service import OpenAIService
+from llm_api.app.models.schemas.task import (
+    SummarizationTaskCreate,
+    SummarizationTaskResponse,
+)
+from llm_api.app.models.domain.task import SummarizationTask
+from llm_api.app.core.openai_service import OpenAIService
 
 router = APIRouter()
 openai_service = OpenAIService()
