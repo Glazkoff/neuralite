@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.endpoints import tasks
+from llm_api.app.api.endpoints import tasks
 
 app = FastAPI()
 
