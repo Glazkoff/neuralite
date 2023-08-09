@@ -4,6 +4,8 @@ from telegram.ext import CallbackContext
 
 from tgbot.handlers.summarize import static_text
 from tgbot.handlers.utils.info import extract_user_data_from_update
+from summarizations.models import SummarizationTask
+from users.models import User
 
 
 def begin_summarization(update: Update, context: CallbackContext) -> None:
@@ -17,10 +19,16 @@ def begin_summarization(update: Update, context: CallbackContext) -> None:
         )
         return
 
-    # TODO: create task for external API
+    user = User.get_user(update, context)
+    task = {
+        "user": user,
+        "input_text": update.message.text.replace(f"{static_text.summ_command} ", ""),
+        "telegram_msg_id": update.message.message_id,
+    }
+    created_task = SummarizationTask.objects.create(**task)
 
     context.bot.send_message(
         chat_id=user_id,
-        text=static_text.please_wait,
+        text=static_text.please_wait.format(task_id=created_task.pk),
         parse_mode=ParseMode.HTML,
     )

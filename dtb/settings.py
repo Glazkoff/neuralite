@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     # local apps
     "users.apps.UsersConfig",
+    "summarizations.apps.SummarizationsConfig",
 ]
 
 MIDDLEWARE = [

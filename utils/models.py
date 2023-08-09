@@ -6,15 +6,19 @@ nb = dict(null=True, blank=True)
 
 
 class CreateTracker(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True, db_index=True, verbose_name="Дата и время создания"
+    )
 
     class Meta:
         abstract = True
-        ordering = ('-created_at',)
+        ordering = ("-created_at",)
 
 
 class CreateUpdateTracker(CreateTracker):
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Дата и время обновления"
+    )
 
     class Meta(CreateTracker.Meta):
         abstract = True
@@ -22,6 +26,7 @@ class CreateUpdateTracker(CreateTracker):
 
 class GetOrNoneManager(models.Manager):
     """returns none if object doesn't exist else model instance"""
+
     def get_or_none(self, **kwargs):
         try:
             return self.get(**kwargs)
