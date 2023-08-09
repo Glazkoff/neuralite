@@ -1,0 +1,32 @@
+from fastapi import APIRouter, HTTPException, Depends
+
+from app.models.schemas.task import SummarizationTaskCreate, SummarizationTaskResponse
+from app.models.domain.task import SummarizationTask
+from app.core.openai_service import OpenAIService
+
+router = APIRouter()
+openai_service = OpenAIService()
+
+
+tasks = []
+
+
+@router.get("/tasks/")
+async def read_tasks():
+    return tasks
+
+
+@router.post("/tasks/", response_model=SummarizationTaskResponse)
+def create_task(task: SummarizationTaskCreate):
+    try:
+        ai_summarization = openai_service.generate_summary(task.text)
+        new_task = SummarizationTask(
+            id=len(tasks),
+            text=task.text,
+            ai_summarization=ai_summarization,
+        )
+        tasks.append(new_task)
+        return new_task
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        raise HTTPException(500, detail=error_message)
