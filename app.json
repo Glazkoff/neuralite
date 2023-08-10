@@ -1,0 +1,16 @@
+{
+  "formation": {
+    "web": {
+      "quantity": 1
+    },
+    "llm-api": {
+      "quantity": 1
+    },
+    "worker": {
+      "quantity": 1
+    },
+    "beat": {
+      "quantity": 1
+    }
+  }
+}
