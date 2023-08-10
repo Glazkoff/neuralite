@@ -10,7 +10,7 @@ class OpenAIService:
     def generate_summary(self, text: str) -> str:
         messages = [
             {
-                "content": "Create a summary capturing the main points and key details of text.",
+                "content": "Create a summary capturing the main points and key details of text. Write only in Russian.",
                 "role": "system",
             },
             {"role": "user", "content": text},
