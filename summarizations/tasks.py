@@ -1,36 +1,110 @@
 import time
+from celery import chain, group
+from telegram import ParseMode, Update
 from dtb.celery import app
 from summarizations.models import SummarizationTask
+from summarizations.services import SummarizationService, APIError
 from celery.utils.log import get_task_logger
 from tgbot.handlers.broadcast_message.utils import send_one_message, delete_one_message
+from tgbot.handlers.summarize import static_text as static_text
 
 logger = get_task_logger(__name__)
 
 
-@app.task
-def call_summarization_api(model_id: int):
-    time.sleep(5)
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def send_confirmation(self, summarization_task_id: int):
+    logger.info(f"Sending confirmation for task {summarization_task_id}")
+    try:
+        task = SummarizationTask.objects.get(pk=summarization_task_id)
+        user_id = task.user.user_id
 
-    task = SummarizationTask.objects.get(pk=model_id)
+        success, message_id = send_one_message(
+            user_id=user_id,
+            text=static_text.please_wait.format(task_id=task.pk),
+            parse_mode=ParseMode.HTML,
+        )
+
+        if not success:
+            raise self.retry()
+
+        task.bot_telegram_msg_id = message_id
+        task.save()
+        logger.info(f"Confirmation message was sent to {user_id}")
+    except Exception as e:
+        logger.error(f"Failed to send message to {user_id}, reason: {e}")
+        raise self.retry(exc=e)
+
+    return summarization_task_id
+
+
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def call_summarization_api(self, summarization_task_id: int):
+    logger.info(f"Call summarization API for task #{summarization_task_id}")
+    task = SummarizationTask.objects.get(pk=summarization_task_id)
+
+    # TODO: add request instead of mock
+    try:
+        service = SummarizationService("http://dtb.llm-api:8001/tasks/")
+        api_request = service.summarize(task.input_text)
+        task.openai_summarized_text = api_request
+        task.save()
+    except APIError as e:
+        logger.error(f"Error summarizing text: {e}")
+        raise self.retry(exc=e)
+    logger.info("API call completed")
+
+    logger.info("API call saved to DB")
+    return summarization_task_id
+
+
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def delete_service_message(self, summarization_task_id: int):
+    logger.info(f"Try to delete service message from task #{summarization_task_id}")
+    try:
+        logger.info(f"Current retry: {self.request.retries}")
+        task = SummarizationTask.objects.get(pk=summarization_task_id)
+        if _ := delete_one_message(
+            task.user.user_id, message_to_delete_id=task.bot_telegram_msg_id
+        ):
+            task.done = True
+            task.save()
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        self.retry(exc=e)
+
+    return summarization_task_id
+
+
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def send_result(self, summarization_task_id: int):
+    logger.info(f"Try to send result for task #{summarization_task_id}")
+    task = SummarizationTask.objects.get(pk=summarization_task_id)
     if _ := send_one_message(
-        task.user.user_id, "test :)", reply_to_message_id=task.user_telegram_msg_id
+        user_id=task.user.user_id,
+        text=f"{task.openai_summarized_text}\n---\nЗапрос #{summarization_task_id}",
+        reply_to_message_id=task.user_telegram_msg_id,
     ):
         task.done = True
         task.save()
     else:
-        logger.error("HUSTON WE HAVE A PROBLEM 1 !!!")
+        logger.error("Error while sending message with results")
+        self.retry()
 
-    logger.info("task.user.user_id, task.bot_telegram_msg_id")
-    logger.info(
-        "task.user.user_id, task.bot_telegram_msg_id"
-        + str(task.user.user_id)
-        + " "
-        + str(task.bot_telegram_msg_id),
-    )
-    if _ := delete_one_message(
-        task.user.user_id, message_to_delete_id=task.bot_telegram_msg_id
-    ):
-        task.done = True
-        task.save()
-    else:
-        logger.error("HUSTON WE HAVE A PROBLEM 2 !!!")
+    return summarization_task_id
+
+
+@app.task(bind=True)
+def master_summarization_task(self, summarization_task_id: int):
+    chain(
+        # A - Send confirmation
+        send_confirmation.s(summarization_task_id),
+        # B - Send API call
+        call_summarization_api.s(),
+        # C - Results return
+        group(
+            # C1 - Send API result
+            send_result.s(),
+            # C2 - Delete service message
+            delete_service_message.s(),
+        ),
+    ).apply_async()

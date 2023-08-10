@@ -55,8 +55,9 @@ def send_one_message(
     disable_web_page_preview: Optional[bool] = None,
     entities: Optional[List[MessageEntity]] = None,
     tg_token: str = TELEGRAM_TOKEN,
-) -> bool:
+) -> (bool, Optional[int]):
     bot = telegram.Bot(tg_token)
+    message_id = None
     try:
         m = bot.send_message(
             chat_id=user_id,
@@ -67,6 +68,7 @@ def send_one_message(
             disable_web_page_preview=disable_web_page_preview,
             entities=entities,
         )
+        message_id = m.message_id
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
@@ -74,7 +76,7 @@ def send_one_message(
     else:
         success = True
         User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
-    return success
+    return success, message_id
 
 
 def delete_one_message(

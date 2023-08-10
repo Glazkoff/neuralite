@@ -84,13 +84,14 @@ services:
       context: ./llm_api
       dockerfile: Dockerfile
     ports:
-      - "8001:80"
+      - "8001:8001"
     volumes:
       - ./llm_api:/app
     env_file:
       - ./.env
     depends_on:
       - db
+    hostname: dtb.llm-api
 
   # nginx:
   #   image: nginx:stable

@@ -1,7 +1,7 @@
 from .models import SummarizationTask
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .tasks import call_summarization_api
+from .tasks import master_summarization_task
 
 
 @receiver(post_save, sender=SummarizationTask)
@@ -10,6 +10,6 @@ def handle_task_creation(sender, instance: SummarizationTask, created: bool, **k
     if not created:
         return
 
-    celery_task = call_summarization_api.delay(instance.pk)
+    celery_task = master_summarization_task.delay(instance.pk)
     instance.last_queue_task_id = celery_task.id
     instance.save()
