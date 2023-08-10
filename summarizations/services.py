@@ -12,12 +12,11 @@ class SummarizationService:
         try:
             response = requests.post(self.api_url, json=data, headers=headers)
 
-            if response.status_code == 200:
-                json_response = response.json()
-                return json_response.get("ai_summarization", None)
-
-            else:
+            if response.status_code != 200:
                 raise APIError(f"Request failed with status {response.status_code}")
+
+            json_response = response.json()
+            return json_response.get("ai_summarization", None)
 
         except requests.RequestException as e:
             raise APIError(f"Error calling API: {str(e)}") from e
