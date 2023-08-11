@@ -72,6 +72,9 @@ def setup_dispatcher(dp):
         )
     )
 
+    # voice
+    dp.add_handler(MessageHandler(Filters.voice, summarization_handlers.begin_tts))
+
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)
 
