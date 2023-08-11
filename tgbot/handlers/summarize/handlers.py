@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext
 
 from tgbot.handlers.summarize import static_text
 from tgbot.handlers.utils.info import extract_user_data_from_update
-from summarizations.models import SummarizationTask
+from summarizations.models import SummarizationTask, VoiceMessage
 from users.models import User
 
 
@@ -29,71 +29,20 @@ def begin_summarization(update: Update, context: CallbackContext) -> None:
 
 
 def begin_tts(update: Update, context: CallbackContext) -> None:
+    # Get Voice object from message
     voice: Voice = update.message.voice
-    # Получаем из него ID файла аудиосообщения
+    # Get ID of audio file
     file_id = voice.file_id
-    # Получаем всю информацию о данном файле
+    # Get all info about file
     voice_file = context.bot.get_file(file_id)
-    duration = voice.duration
-    # А уже из нее достаем путь к файлу на сервере Телеграм в директории
-    # с файлами нашего бота
-    voice_path = voice_file.file_path
-    # TODO: сохранять сущность аудиосообщения в БД и привязывать задачу распознавания
-    message = f"Длительность аудио: <b>{duration}c</b>\n---\n"
-    if duration <= 30:
-        speech_text = get_text_from_speech_sync(voice_path)
-        message += f"Текст аудио:\n{speech_text}"
-
-        if speech_text != "":
-            user = User.get_user(update, context)
-            task = {
-                "user": user,
-                "input_text": speech_text,
-                "user_telegram_msg_id": update.message.message_id,
-            }
-            SummarizationTask.objects.create(**task)
-    else:
-        # TODO: асинхронное распознавание аудио
-        # https://cloud.yandex.ru/docs/speechkit/stt/api/transcribation-api
-        message += (
-            "<i>Распознавание аудиосоообщений больше 30 секунд появится позже</i>"
-        )
-    context.bot.send_message(
-        update.message.chat.id, text=message, parse_mode=ParseMode.HTML
-    )
-
-
-def get_text_from_speech_sync(file_url):
-    print(file_url)
-    # TODO: вынести в отдельный сервис
-    # URL для отправки аудиофайла на распознавание
-    STT_URL = "https://stt.api.cloud.yandex.net/speech/v1/stt:recognize"
-    YC_STT_API_KEY = os.environ.get("YC_STT_API_KEY")
-
-    # Выполняем GET-запрос по ссылке на аудиофайл
-    response = requests.get(file_url)
-
-    # Если запрос к серверу Telegram не удался...
-    if response.status_code != 200:
-        return None
-
-    # Получаем из ответа запроса наш аудиофайл
-    audio_data = response.content
-
-    # Создам заголовок с API-ключом для Яндекс.Облака, который пошлем в запросе
-    headers = {"Authorization": f"Api-Key {YC_STT_API_KEY}"}
-
-    # Отправляем POST-запрос на сервер Яндекс, который занимается расшифровкой аудио,
-    # передав его URL, заголовок и сам файл аудиосообщения
-    response = requests.post(STT_URL, headers=headers, data=audio_data)
-
-    # Если запрос к Яндекс.Облаку не удался...
-    if not response.ok:
-        print("response.status_code", response.status_code)
-        print("response.content", response.content)
-        return None
-
-    # Преобразуем JSON-ответ сервера в объект Python
-    result = response.json()
-    # Возвращаем текст аудиосообщения
-    return result.get("result")
+    # Get user
+    user = User.get_user(update, context)
+    # Create VoiceMessage instance
+    voice_message = {
+        "user": user,
+        "file_id": file_id,
+        "duration": voice.duration,
+        "voice_path": voice_file.file_path,
+        "user_telegram_msg_id": update.message.message_id,
+    }
+    VoiceMessage.objects.create(**voice_message)

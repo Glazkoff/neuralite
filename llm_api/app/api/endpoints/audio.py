@@ -6,8 +6,8 @@ router = APIRouter()
 yandex_cloud_service = YandexCloudService()
 
 
-@router.post("/tts/sync/")
-async def tts_sync(audio_sync_task: AudioTaskCreate) -> AudioTaskResponse:
+@router.post("/stt/sync/")
+async def stt_sync(audio_sync_task: AudioTaskCreate) -> AudioTaskResponse:
     try:
         text_from_audio = yandex_cloud_service.get_text_from_speech_sync(
             audio_sync_task.voice_message_url
