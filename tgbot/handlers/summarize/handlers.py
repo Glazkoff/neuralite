@@ -54,6 +54,7 @@ def begin_tts(update: Update, context: CallbackContext) -> None:
             SummarizationTask.objects.create(**task)
     else:
         # TODO: асинхронное распознавание аудио
+        # https://cloud.yandex.ru/docs/speechkit/stt/api/transcribation-api
         message += (
             "<i>Распознавание аудиосоообщений больше 30 секунд появится позже</i>"
         )
@@ -63,6 +64,7 @@ def begin_tts(update: Update, context: CallbackContext) -> None:
 
 
 def get_text_from_speech_sync(file_url):
+    print(file_url)
     # TODO: вынести в отдельный сервис
     # URL для отправки аудиофайла на распознавание
     STT_URL = "https://stt.api.cloud.yandex.net/speech/v1/stt:recognize"
