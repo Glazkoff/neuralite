@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 
 from llm_api.app.models.schemas.task import (
     SummarizationTaskCreate,
@@ -32,4 +32,4 @@ def create_task(task: SummarizationTaskCreate):
         return new_task
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
-        raise HTTPException(500, detail=error_message)
+        raise HTTPException(500, detail=error_message) from e
