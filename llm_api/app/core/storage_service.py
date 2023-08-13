@@ -1,5 +1,7 @@
 import os
 import boto3
+import requests
+from io import BytesIO
 from typing import Dict, BinaryIO
 
 S3_URL = "https://storage.yandexcloud.net"
@@ -23,3 +25,17 @@ class StorageService:
         extra_args = metadata or {}
         self.s3.upload_fileobj(file, self.bucket, key, ExtraArgs=extra_args)
         return key
+
+    def upload_from_url(self, file_url: str, key: str) -> [str, None]:
+        # Выполняем GET-запрос по ссылке на аудиофайл
+        response = requests.get(file_url)
+
+        # Если запрос к серверу Telegram не удался...
+        if response.status_code != 200:
+            return None
+
+        # Получаем из ответа запроса наш аудиофайл
+        file_data = response.content
+        file_stream = BytesIO(file_data)
+
+        return self.upload_file(file_stream, key=key)
