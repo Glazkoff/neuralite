@@ -33,3 +33,7 @@ sentry-sdk
 fastapi
 openai
 python-dotenv
+
+# For storage service
+boto3
+python-multipart
