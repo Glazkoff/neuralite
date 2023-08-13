@@ -3,7 +3,7 @@ from telegram import ParseMode
 from dtb.celery import app
 from summarizations.models import SummarizationTask, VoiceMessage
 from summarizations.services import (
-    TranscribationService,
+    SpeechToTextService,
     StorageService,
     APIError,
 )
@@ -48,7 +48,7 @@ def call_stt_api(self, voice_message_id: int) -> int:
     voice_message = VoiceMessage.objects.get(pk=voice_message_id)
 
     try:
-        service = TranscribationService()
+        service = SpeechToTextService()
         api_request = service.transcribe_sync(voice_message.voice_path)
 
         summarization_task = SummarizationTask.objects.create(
@@ -128,6 +128,24 @@ def upload_long_voice(self, voice_message_id: int) -> int:
     return voice_message_id
 
 
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def call_stt_api_async(self, voice_message_id: int) -> int:
+    logger.info(
+        f"Try to send request for transcription task from voice message #{voice_message_id}"
+    )
+
+    try:
+        voice_message = VoiceMessage.objects.get(pk=voice_message_id)
+        service = SpeechToTextService()
+        operation_id = service.transcribe_async_start(voice_message.S3_path)
+        voice_message.stt_operation_id = operation_id
+        voice_message.save()
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        self.retry(exc=e)
+    return voice_message_id
+
+
 @app.task(bind=True)
 def master_voice_message_task(self, voice_message_id: int):
     voice_message = VoiceMessage.objects.get(pk=voice_message_id)
@@ -149,6 +167,9 @@ def master_voice_message_task(self, voice_message_id: int):
         chain(
             send_confirmation_voice.s(voice_message_id),
             upload_long_voice.s(),
+            call_stt_api_async.s(),
+            # TODO: check if done and save results
+            # TODO: delete file from bucket
             group(
                 delete_confirmation_voice.s(),
             ),

@@ -27,7 +27,7 @@ class SummarizationService:
             raise APIError(f"Error calling API: {str(e)}") from e
 
 
-class TranscribationService:
+class SpeechToTextService:
     def __init__(
         self,
         api_url_sync: str = f"{BASE_LLM_API_URL}/stt/sync/",
@@ -52,8 +52,21 @@ class TranscribationService:
         except requests.RequestException as e:
             raise APIError(f"Error calling API: {str(e)}") from e
 
-    def transcribe_async_start(self, S3_path: str) -> str:
-        pass
+    def transcribe_async_start(self, s3_path: str) -> str:
+        headers = {"Content-Type": "application/json"}
+        data = {"S3_path": s3_path}
+
+        try:
+            response = requests.post(self.api_url_async, json=data, headers=headers)
+
+            if response.status_code != 200:
+                raise APIError(f"Request failed with status {response.status_code}")
+
+            json_response = response.json()
+            return json_response.get("operation_id", None)
+
+        except requests.RequestException as e:
+            raise APIError(f"Error calling API: {str(e)}") from e
 
 
 class StorageService:

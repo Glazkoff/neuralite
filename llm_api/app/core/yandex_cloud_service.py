@@ -70,3 +70,5 @@ class YandexCloudService:
     def check_async_stt(self, operation_id: str) -> [bool, None]:
         # TODO
         pass
+
+    # def

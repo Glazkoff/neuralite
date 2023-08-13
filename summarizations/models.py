@@ -37,6 +37,9 @@ class VoiceMessage(CreateUpdateTracker):
     duration = models.IntegerField("Длительность (секунд)", null=True, blank=True)
     voice_path = models.CharField("URL файла сообщения", max_length=255, blank=True)
     S3_path = models.CharField("Путь для S3 хранилища", max_length=255, blank=True)
+    stt_operation_id = models.CharField(
+        "ID облачной операции", max_length=255, blank=True
+    )
     transcribed_text = models.TextField("Транскрибированный текст", blank=True)
     transcribed = models.BooleanField(
         "Сообщение транскрибировано", default=False, blank=True
