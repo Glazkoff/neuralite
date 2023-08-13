@@ -2,10 +2,8 @@ from celery import chain, group
 from telegram import ParseMode
 from dtb.celery import app
 from summarizations.models import SummarizationTask
-from summarizations.services import (
-    SummarizationService,
-    APIError,
-)
+from summarizations.services.common import APIError
+from summarizations.services.summarization import SummarizationService
 from celery.utils.log import get_task_logger
 from tgbot.handlers.broadcast_message.utils import send_one_message, delete_one_message
 from tgbot.handlers.summarize import static_text as static_text

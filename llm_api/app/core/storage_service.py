@@ -39,3 +39,8 @@ class StorageService:
         file_stream = BytesIO(file_data)
 
         return self.upload_file(file_stream, key=key)
+
+    def delete_object(self, key: str) -> None:
+        """Delete object from S3 bucket"""
+
+        self.s3.delete_object(Bucket=self.bucket, Key=key)

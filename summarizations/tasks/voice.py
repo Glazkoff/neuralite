@@ -2,17 +2,28 @@ from celery import chain, group
 from telegram import ParseMode
 from dtb.celery import app
 from summarizations.models import SummarizationTask, VoiceMessage
-from summarizations.services import (
-    SpeechToTextService,
-    StorageService,
-    APIError,
-)
+from summarizations.services.speech_to_text import SpeechToTextService
+from summarizations.services.storage import StorageService
+from summarizations.services.common import APIError
 from celery.utils.log import get_task_logger
 from tgbot.handlers.broadcast_message.utils import send_one_message, delete_one_message
 from tgbot.handlers.summarize import static_text as static_text
 from .utils import get_voice_massage_key
 
 logger = get_task_logger(__name__)
+
+
+def register_transcription_for_vm(voice_message: VoiceMessage, text: str):
+    summarization_task = SummarizationTask.objects.create(
+        user_telegram_msg_id=voice_message.user_telegram_msg_id,
+        user=voice_message.user,
+        input_text=text,
+    )
+
+    voice_message.summarization_task = summarization_task
+    voice_message.transcribed_text = text
+    voice_message.transcribed = True
+    voice_message.save()
 
 
 @app.task(bind=True, max_retries=3, retry_backoff=True)
@@ -49,17 +60,9 @@ def call_stt_api(self, voice_message_id: int) -> int:
 
     try:
         service = SpeechToTextService()
-        api_request = service.transcribe_sync(voice_message.voice_path)
+        transcription = service.transcribe_sync(voice_message.voice_path)
 
-        summarization_task = SummarizationTask.objects.create(
-            user_telegram_msg_id=voice_message.user_telegram_msg_id,
-            user=voice_message.user,
-            input_text=api_request,
-        )
-
-        voice_message.summarization_task = summarization_task
-        voice_message.transcribed_text = api_request
-        voice_message.save()
+        register_transcription_for_vm(voice_message, transcription)
 
     except APIError as e:
         logger.error(f"Error transcribing text: {e}")
@@ -146,6 +149,48 @@ def call_stt_api_async(self, voice_message_id: int) -> int:
     return voice_message_id
 
 
+@app.task(bind=True, retry_backoff=True)
+def try_get_results_async(self, voice_message_id: int) -> int:
+    logger.info(
+        f"Try to send request for getting transcription results from voice message #{voice_message_id}"
+    )
+
+    try:
+        voice_message = VoiceMessage.objects.get(pk=voice_message_id)
+        service = SpeechToTextService()
+        done, text_result = service.transcribe_async_results(
+            voice_message.stt_operation_id
+        )
+
+        if not done:
+            logger.error("Not ready")
+            raise self.retry(countdown=10)
+
+        register_transcription_for_vm(voice_message, text_result)
+
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        self.retry(exc=e)
+
+    return voice_message_id
+
+
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def delete_storage_file(self, voice_message_id: int) -> int:
+    logger.info(f"Try to delete storage file from voice message #{voice_message_id}")
+    try:
+        voice_message = VoiceMessage.objects.get(pk=voice_message_id)
+        service = StorageService()
+
+        _, _, key = voice_message.S3_path.partition("/")
+        logger.info(f"key - '{key}'")
+        service.delete_file(key)
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        self.retry(exc=e)
+    return voice_message_id
+
+
 @app.task(bind=True)
 def master_voice_message_task(self, voice_message_id: int):
     voice_message = VoiceMessage.objects.get(pk=voice_message_id)
@@ -168,9 +213,10 @@ def master_voice_message_task(self, voice_message_id: int):
             send_confirmation_voice.s(voice_message_id),
             upload_long_voice.s(),
             call_stt_api_async.s(),
-            # TODO: check if done and save results
-            # TODO: delete file from bucket
+            try_get_results_async.s(),
             group(
+                send_result_voice.s(),
                 delete_confirmation_voice.s(),
+                delete_storage_file.s(),
             ),
         ).apply_async()

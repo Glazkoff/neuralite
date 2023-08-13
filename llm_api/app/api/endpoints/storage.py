@@ -20,6 +20,16 @@ async def upload_file(key: str, file: UploadFile):
         raise HTTPException(500, detail=error_message) from e
 
 
+@router.delete("/upload/{key}")
+async def upload_file(key: str):
+    try:
+        storage_service.delete_object(key=key)
+        return {"success": True}
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        raise HTTPException(500, detail=error_message) from e
+
+
 @router.post("/upload/from_url/")
 async def stt_sync(audio_sync_task: FileUploadCreate) -> FileUploadResponse:
     try:

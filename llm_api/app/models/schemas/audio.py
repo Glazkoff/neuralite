@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class AudioTaskCreate(BaseModel):
@@ -15,3 +16,8 @@ class AudioTaskAsyncCreate(BaseModel):
 
 class AudioTaskAsyncResponse(BaseModel):
     operation_id: str
+
+
+class AudioTaskAsyncResults(BaseModel):
+    done: bool
+    text: Optional[str] = None
