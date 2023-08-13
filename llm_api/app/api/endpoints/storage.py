@@ -1,8 +1,8 @@
 from fastapi import APIRouter, UploadFile, HTTPException
 from llm_api.app.core.storage_service import StorageService
-from llm_api.app.models.schemas.audio import (
-    AudioTaskUploadCreate,
-    AudioTaskUploadResponse,
+from llm_api.app.models.schemas.storage import (
+    FileUploadCreate,
+    FileUploadResponse,
 )
 
 router = APIRouter()
@@ -21,7 +21,7 @@ async def upload_file(key: str, file: UploadFile):
 
 
 @router.post("/upload/from_url/")
-async def stt_sync(audio_sync_task: AudioTaskUploadCreate) -> AudioTaskUploadResponse:
+async def stt_sync(audio_sync_task: FileUploadCreate) -> FileUploadResponse:
     try:
         key = storage_service.upload_from_url(
             audio_sync_task.file_url, audio_sync_task.key
@@ -29,7 +29,7 @@ async def stt_sync(audio_sync_task: AudioTaskUploadCreate) -> AudioTaskUploadRes
         if key is None:
             raise ValueError("Problem with S3 upload")
         path = f"{storage_service.bucket}/{key}"
-        return AudioTaskUploadResponse(path=path)
+        return FileUploadResponse(path=path)
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         raise HTTPException(500, detail=error_message) from e
