@@ -28,7 +28,9 @@ def register_transcription_for_vm(voice_message: VoiceMessage, text: str):
 
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def send_confirmation_voice(self, voice_message_id: int) -> int:
-    logger.info(f"Try to send confirmation for voice message #{voice_message_id}")
+    logger.info(
+        f"[{self.request.retries}] Try to send confirmation for voice message #{voice_message_id}"
+    )
     try:
         voice_message = VoiceMessage.objects.get(pk=voice_message_id)
         user_id = voice_message.user.user_id
@@ -55,7 +57,9 @@ def send_confirmation_voice(self, voice_message_id: int) -> int:
 
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def call_stt_api(self, voice_message_id: int) -> int:
-    logger.info(f"Call STT API for voice summarization #{voice_message_id}")
+    logger.info(
+        f"[{self.request.retries}] Call STT API for voice summarization #{voice_message_id}"
+    )
     voice_message = VoiceMessage.objects.get(pk=voice_message_id)
 
     try:
@@ -63,18 +67,19 @@ def call_stt_api(self, voice_message_id: int) -> int:
         transcription = service.transcribe_sync(voice_message.voice_path)
 
         register_transcription_for_vm(voice_message, transcription)
-
+        logger.info("API call completed")
     except APIError as e:
         logger.error(f"Error transcribing text: {e}")
         raise self.retry(exc=e) from e
-    logger.info("API call completed")
 
     return voice_message_id
 
 
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def send_result_voice(self, voice_message_id: int) -> int:
-    logger.info(f"Try to send result for voice message #{voice_message_id}")
+    logger.info(
+        f"[{self.request.retries}] Try to send result for voice message #{voice_message_id}"
+    )
     voice_message = VoiceMessage.objects.get(pk=voice_message_id)
     if _ := send_one_message(
         user_id=voice_message.user.user_id,
@@ -86,6 +91,7 @@ def send_result_voice(self, voice_message_id: int) -> int:
     ):
         voice_message.done = True
         voice_message.save()
+        logger.info("Results were sent successfully")
     else:
         logger.error("Error while sending message with results")
         self.retry()
@@ -93,11 +99,12 @@ def send_result_voice(self, voice_message_id: int) -> int:
     return voice_message_id
 
 
-@app.task(bind=True, max_retries=3, retry_backoff=True)
+@app.task(bind=True, max_retries=1, retry_backoff=True)
 def delete_confirmation_voice(self, voice_message_id: int) -> int:
-    logger.info(f"Try to delete service message from voice message #{voice_message_id}")
+    logger.info(
+        f"[{self.request.retries}] Try to delete service message from voice message #{voice_message_id}"
+    )
     try:
-        logger.info(f"Current retry: {self.request.retries}")
         voice_message = VoiceMessage.objects.get(pk=voice_message_id)
         if _ := delete_one_message(
             voice_message.user.user_id,
@@ -105,6 +112,7 @@ def delete_confirmation_voice(self, voice_message_id: int) -> int:
         ):
             voice_message.done = True
             voice_message.save()
+            logger.info("Message was deleted successfully")
     except Exception as e:
         logger.error(f"Error: {e}")
         self.retry(exc=e)
@@ -114,7 +122,7 @@ def delete_confirmation_voice(self, voice_message_id: int) -> int:
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def upload_long_voice(self, voice_message_id: int) -> int:
     logger.info(
-        f"Try to send file to S3 storage from voice message #{voice_message_id}"
+        f"[{self.request.retries}] Try to send file to S3 storage from voice message #{voice_message_id}"
     )
 
     try:
@@ -125,6 +133,7 @@ def upload_long_voice(self, voice_message_id: int) -> int:
         )
         voice_message.S3_path = path
         voice_message.save()
+        logger.info("Voice message was uploaded successfully")
     except Exception as e:
         logger.error(f"Error: {e}")
         self.retry(exc=e)
@@ -134,7 +143,7 @@ def upload_long_voice(self, voice_message_id: int) -> int:
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def call_stt_api_async(self, voice_message_id: int) -> int:
     logger.info(
-        f"Try to send request for transcription task from voice message #{voice_message_id}"
+        f"[{self.request.retries}] Try to send request for transcription task from voice message #{voice_message_id}"
     )
 
     try:
@@ -143,6 +152,7 @@ def call_stt_api_async(self, voice_message_id: int) -> int:
         operation_id = service.transcribe_async_start(voice_message.S3_path)
         voice_message.stt_operation_id = operation_id
         voice_message.save()
+        logger.info("Task on async STT was started successfully")
     except Exception as e:
         logger.error(f"Error: {e}")
         self.retry(exc=e)
@@ -152,22 +162,28 @@ def call_stt_api_async(self, voice_message_id: int) -> int:
 @app.task(bind=True, retry_backoff=True)
 def try_get_results_async(self, voice_message_id: int) -> int:
     logger.info(
-        f"Try to send request for getting transcription results from voice message #{voice_message_id}"
+        f"[{self.request.retries}] Try to send request for getting transcription results from voice message #{voice_message_id}"
     )
 
     try:
         voice_message = VoiceMessage.objects.get(pk=voice_message_id)
-        service = SpeechToTextService()
-        done, text_result = service.transcribe_async_results(
-            voice_message.stt_operation_id
-        )
+        if not voice_message.transcribed:
+            service = SpeechToTextService()
+            done, text_result = service.transcribe_async_results(
+                voice_message.stt_operation_id
+            )
 
-        if not done:
-            logger.error("Not ready")
-            raise self.retry(countdown=10)
+            if not done:
+                logger.error("Not ready")
+                raise self.retry(countdown=10)
 
-        register_transcription_for_vm(voice_message, text_result)
-
+            register_transcription_for_vm(voice_message, text_result)
+            logger.info("Task on async STT was ended successfully")
+        else:
+            # Stop the chain
+            self.request.chain = None
+            self.request.callbacks = None
+            return voice_message_id
     except Exception as e:
         logger.error(f"Error: {e}")
         self.retry(exc=e)
@@ -177,14 +193,16 @@ def try_get_results_async(self, voice_message_id: int) -> int:
 
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def delete_storage_file(self, voice_message_id: int) -> int:
-    logger.info(f"Try to delete storage file from voice message #{voice_message_id}")
+    logger.info(
+        f"[{self.request.retries}] Try to delete storage file from voice message #{voice_message_id}"
+    )
     try:
         voice_message = VoiceMessage.objects.get(pk=voice_message_id)
         service = StorageService()
 
         _, _, key = voice_message.S3_path.partition("/")
-        logger.info(f"key - '{key}'")
         service.delete_file(key)
+        logger.info(f"File with key - '{key}' - deleted successfully")
     except Exception as e:
         logger.error(f"Error: {e}")
         self.retry(exc=e)
@@ -193,30 +211,36 @@ def delete_storage_file(self, voice_message_id: int) -> int:
 
 @app.task(bind=True)
 def master_voice_message_task(self, voice_message_id: int):
-    voice_message = VoiceMessage.objects.get(pk=voice_message_id)
-    if voice_message.duration < 30:
-        chain(
-            # A - Send confirmation
-            send_confirmation_voice.s(voice_message_id),
-            # B - Send STT API call
-            call_stt_api.s(),
-            # C - Results return
-            group(
-                # C1 - Send API result & create task for summarization
-                send_result_voice.s(),
-                # C2 - Delete service message
-                delete_confirmation_voice.s(),
-            ),
-        ).apply_async()
-    else:
-        chain(
-            send_confirmation_voice.s(voice_message_id),
-            upload_long_voice.s(),
-            call_stt_api_async.s(),
-            try_get_results_async.s(),
-            group(
-                send_result_voice.s(),
-                delete_confirmation_voice.s(),
-                delete_storage_file.s(),
-            ),
-        ).apply_async()
+    try:
+        voice_message = VoiceMessage.objects.get(pk=voice_message_id)
+        if voice_message.transcribed:
+            return None
+        if voice_message.duration < 30:
+            chain(
+                # A - Send confirmation
+                send_confirmation_voice.s(voice_message_id),
+                # B - Send STT API call
+                call_stt_api.s(),
+                # C - Results return
+                group(
+                    # C1 - Send API result & create task for summarization
+                    send_result_voice.s(),
+                    # C2 - Delete service message
+                    delete_confirmation_voice.s(),
+                ),
+            ).delay()
+        else:
+            chain(
+                send_confirmation_voice.s(voice_message_id),
+                upload_long_voice.s(),
+                call_stt_api_async.s(),
+                try_get_results_async.s(),
+                group(
+                    send_result_voice.s(),
+                    delete_confirmation_voice.s(),
+                    delete_storage_file.s(),
+                ),
+            ).delay()
+    except Exception as e:
+        logger.error(f"Error: {e}")
+    return None

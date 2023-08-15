@@ -18,7 +18,7 @@ def handle_task_creation(sender, instance: SummarizationTask, created: bool, **k
 
 @receiver(post_save, sender=VoiceMessage)
 def handle_voice_message_creation(
-    sender, instance: SummarizationTask, created: bool, **kwargs
+    sender, instance: VoiceMessage, created: bool, **kwargs
 ):
     print(f"DEBUG - VM registered - #{instance.pk}")
     if not created:

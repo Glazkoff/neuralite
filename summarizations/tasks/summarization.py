@@ -56,7 +56,7 @@ def call_summarization_api(self, summarization_task_id: int) -> int:
     return summarization_task_id
 
 
-@app.task(bind=True, max_retries=3, retry_backoff=True)
+@app.task(bind=True, max_retries=1, retry_backoff=True)
 def delete_confirmation(self, summarization_task_id: int) -> int:
     logger.info(f"Try to delete service message from task #{summarization_task_id}")
     try:
@@ -109,4 +109,5 @@ def master_summarization_task(self, summarization_task_id: int):
             # C1 - Send API result
             send_result.s(),
         ),
-    ).apply_async()
+    ).delay()
+    return None
