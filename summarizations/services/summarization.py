@@ -10,7 +10,7 @@ class SummarizationService:
     ):
         self.api_url = api_url
 
-    def summarize(self, text: str) -> str:
+    def summarize(self, text: str) -> (str, str):
         headers = {"Content-Type": "application/json"}
         data = {"text": text}
 
@@ -21,7 +21,9 @@ class SummarizationService:
                 raise APIError(f"Request failed with status {response.status_code}")
 
             json_response = response.json()
-            return json_response.get("ai_summarization", None)
+            return json_response.get("ai_summarization", None), json_response.get(
+                "extracted_facts", None
+            )
 
         except requests.RequestException as e:
             raise APIError(f"Error calling API: {str(e)}") from e

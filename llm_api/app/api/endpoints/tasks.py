@@ -23,10 +23,12 @@ async def read_tasks():
 def create_task(task: SummarizationTaskCreate):
     try:
         ai_summarization = openai_service.generate_summary(task.text)
+        extracted_facts = openai_service.extract_facts(task.text)
         new_task = SummarizationTask(
             id=len(tasks),
             text=task.text,
             ai_summarization=ai_summarization,
+            extracted_facts=extracted_facts,
         )
         tasks.append(new_task)
         return new_task

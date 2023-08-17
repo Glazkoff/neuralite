@@ -44,8 +44,9 @@ def call_summarization_api(self, summarization_task_id: int) -> int:
 
     try:
         service = SummarizationService()
-        api_request = service.summarize(task.input_text)
-        task.openai_summarized_text = api_request
+        summarized_text, extracted_facts = service.summarize(task.input_text)
+        task.openai_summarized_text = summarized_text
+        task.openai_extracted_facts = extracted_facts
         task.save()
     except APIError as e:
         logger.error(f"Error summarizing text: {e}")
@@ -83,6 +84,7 @@ def send_result(self, summarization_task_id: int) -> int:
         text=static_text.message_summary.format(
             summarization_task_id=summarization_task_id,
             summarized_text=task.openai_summarized_text,
+            extracted_facts=task.openai_extracted_facts,
         ),
         reply_to_message_id=task.user_telegram_msg_id,
     ):

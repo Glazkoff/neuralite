@@ -10,8 +10,6 @@ please_wait_voice = (
     "Происходит распознавание голоса (#{voice_message_id})\nПожалуйста, ожидайте... ⏳"
 )
 message_transcribe = (
-    "Транскрибация сообщения #{voice_message_id}\n---\n{transcribed_text}"
+    "<b>Транскрибация сообщения #{voice_message_id}</b>\n—\n{transcribed_text}"
 )
-message_summary = (
-    "Суммаризация сообщения #{summarization_task_id}\n---\n{summarized_text}"
-)
+message_summary = "<b>Суммаризация сообщения #{summarization_task_id}</b>\n—\n{summarized_text}\n\n<b>Извлечённые факты:</b>\n—\n{extracted_facts}"

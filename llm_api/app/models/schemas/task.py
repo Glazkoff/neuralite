@@ -6,7 +6,6 @@ class SummarizationTaskCreate(BaseModel):
 
 
 class SummarizationTaskResponse(BaseModel):
-    id: int
     text: str
     ai_summarization: str
-    done: bool
+    extracted_facts: str = ""

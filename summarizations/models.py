@@ -13,6 +13,11 @@ class SummarizationTask(CreateUpdateTracker):
     openai_summarized_text = models.TextField(
         "Текст суммаризации (OpenAI API)", blank=True
     )
+    openai_extracted_facts = models.TextField(
+        "Извлечённый список фактов (OpenAI API)",
+        blank=True,
+        null=True,
+    )
     last_queue_task_id = models.CharField(
         "ID главной задачи в очереди", max_length=50, blank=True
     )
