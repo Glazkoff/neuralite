@@ -274,6 +274,6 @@ HTTP requests between services:
 <!-- From web to llm-api -->
 http://appName.processName:innerPortName
 
-<!-- Пример -->
+<!-- Example -->
 http://dtb.llm-api:8001
 ```
