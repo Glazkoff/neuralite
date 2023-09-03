@@ -29,6 +29,11 @@ def setup_dispatcher(dp):
     """
     # summarization
     dp.add_handler(CommandHandler("summ", summarization_handlers.begin_summarization))
+    dp.add_handler(
+        MessageHandler(
+            Filters.text & ~Filters.command, summarization_handlers.begin_summarization
+        )
+    )
 
     # onboarding
     dp.add_handler(CommandHandler("start", onboarding_handlers.command_start))
