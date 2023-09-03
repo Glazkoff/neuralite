@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 3rd party apps
     "django_celery_beat",
     "debug_toolbar",
+    "django_celery_results",
     # local apps
     "users.apps.UsersConfig",
     "summarizations.apps.SummarizationsConfig",
@@ -148,6 +149,8 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_DEFAULT_QUEUE = "default"
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
 
 
 # -----> TELEGRAM

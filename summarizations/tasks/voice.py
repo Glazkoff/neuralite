@@ -232,8 +232,10 @@ def master_voice_message_task(self, voice_message_id: int):
         else:
             chain(
                 send_confirmation_voice.s(voice_message_id),
+                # TODO: diarization
                 upload_long_voice.s(),
                 call_stt_api_async.s(),
+                # TODO: transform STT to dialog format
                 try_get_results_async.s(),
                 group(
                     send_result_voice.s(),
