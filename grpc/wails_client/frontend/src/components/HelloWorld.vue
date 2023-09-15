@@ -1,6 +1,7 @@
 <script setup>
 import { reactive } from "vue";
 import { Greet } from "../../wailsjs/go/main/App";
+import FullScreenBtn from "./FullScreenBtn.vue";
 
 const data = reactive({
   name: "",
@@ -26,6 +27,7 @@ function greet() {
         type="text"
       />
       <button class="btn" @click="greet">Greet</button>
+      <FullScreenBtn></FullScreenBtn>
     </div>
   </main>
 </template>

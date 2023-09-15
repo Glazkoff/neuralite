@@ -1,6 +1,6 @@
 go 1.20
 
 use (
-	./grpc/server
+	./grpc
 	./grpc/wails_client
 )
