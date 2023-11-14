@@ -6,6 +6,10 @@ export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
 
+export function ProcessAudioBase64(arg1) {
+  return window['go']['main']['App']['ProcessAudioBase64'](arg1);
+}
+
 export function Test(arg1) {
   return window['go']['main']['App']['Test'](arg1);
 }

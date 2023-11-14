@@ -6,18 +6,18 @@ const data = reactive({
 });
 
 function switchFullScreen(params) {
-  data.isFullScreen = !data.isFullScreen;
   if (data.isFullScreen) {
     window.runtime.WindowUnfullscreen();
   } else {
     window.runtime.WindowFullscreen();
   }
+  data.isFullScreen = !data.isFullScreen;
 }
 </script>
 
 <template>
   <button type="button" class="btn" @click="switchFullScreen">
-    {{ data.isFullScreen ? "Full" : "Unfull" }}
+    {{ data.isFullScreen ? "Unfull" : "Full" }}
   </button>
 </template>
 

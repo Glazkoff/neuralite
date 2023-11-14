@@ -1,16 +1,16 @@
 <script setup>
-import HelloWorld from "./components/HelloWorld.vue";
+import Recorder from "./components/Recorder.vue";
 </script>
 
 <template>
-  <img
+  <!-- <img
     id="logo"
     alt="Wails logo"
     style="--wails-draggable: no-drag"
     src="./assets/images/logo-universal.png"
     draggable="false"
-  />
-  <HelloWorld />
+  /> -->
+  <Recorder />
 </template>
 
 <style>
@@ -20,6 +20,7 @@ import HelloWorld from "./components/HelloWorld.vue";
   height: 50%;
   margin: auto;
   padding: 10% 0 0;
+  box-sizing: border-box;
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
