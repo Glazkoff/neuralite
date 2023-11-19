@@ -1,0 +1,49 @@
+@startuml ERD
+title __ER-диаграмма сервиса суммаризации__
+
+skinparam linetype ortho
+
+entity "User" as user {
+  * user_id : integer <<PK>>
+  --
+  * username : string
+  * deep_link : string
+  * is_blocked_bot : boolean  
+  * is_admin : boolean
+  first_name : string
+  last_name : string
+  language_code : string 
+  
+}
+
+entity "SummarizationTask" as sum_task {
+  * id : integer <<PK>>
+  --
+  * user_id : integer <<FK>>
+  * document_text : text
+  * done : boolean
+  user_telegram_msg_id : bigint
+  bot_telegram_msg_id : bigint  
+  last_queue_task_id : string
+}  
+
+entity "Summary" as summary {
+  * id : integer <<PK>> 
+  --
+  * task_id : integer <<FK>>
+  * summarized_text : text
+}
+
+entity "Facts" as facts {
+  * id : integer <<PK>>
+  --
+  * task_id : integer <<FK>>
+  * extracted_facts : text
+  triples : json
+}
+
+user |o--o{ sum_task : creates 
+sum_task |o--o| summary : summarized
+sum_task |o--o| facts : extracted
+
+@enduml
