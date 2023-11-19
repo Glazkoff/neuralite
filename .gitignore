@@ -138,3 +138,5 @@ dmypy.json
 .Dockerfile.swp
 
 *.ipynb
+
+test

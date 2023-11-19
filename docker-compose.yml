@@ -25,9 +25,9 @@ services:
       dockerfile: LocalDockerfile
     container_name: dtb_django
     restart: always
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:9000"
     ports:
-      - "8000:8000"
+      - "9000:9000"
     volumes:
       - .:/code
     env_file:
@@ -84,7 +84,7 @@ services:
       context: ./llm_api
       dockerfile: Dockerfile
     ports:
-      - "8001:8001"
+      - "9001:9001"
     volumes:
       - ./llm_api:/app
     env_file:
