@@ -139,3 +139,5 @@ dmypy.json
 
 *.ipynb
 test
+
+test_audio.*

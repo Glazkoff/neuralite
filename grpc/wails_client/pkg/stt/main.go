@@ -19,14 +19,14 @@ import (
 type Recognizer struct {
 	connectionCtx  context.Context
 	grpcConnection *grpc.ClientConn
-	currentStream  stt.Recognizer_RecognizeStreamingClient
+	CurrentStream  stt.Recognizer_RecognizeStreamingClient
 }
 
 func NewRecognizer() *Recognizer {
 	return &Recognizer{}
 }
 
-func generateSettingsRequest() stt.StreamingRequest {
+func GenerateSettingsRequest(sampleRate int64, channelCount int64) stt.StreamingRequest {
 	return stt.StreamingRequest{
 		Event: &stt.StreamingRequest_SessionOptions{
 			SessionOptions: &stt.StreamingOptions{
@@ -34,10 +34,10 @@ func generateSettingsRequest() stt.StreamingRequest {
 					AudioFormat: &stt.AudioFormatOptions{
 						AudioFormat: &stt.AudioFormatOptions_RawAudio{
 							RawAudio: &stt.RawAudio{
-								// AudioEncoding: stt.RawAudio_LINEAR16_PCM,
-								AudioEncoding:     stt.RawAudio_AUDIO_ENCODING_UNSPECIFIED,
-								SampleRateHertz:   44100,
-								AudioChannelCount: 1,
+								AudioEncoding: stt.RawAudio_LINEAR16_PCM,
+								// AudioEncoding:     stt.RawAudio_AUDIO_ENCODING_UNSPECIFIED,
+								SampleRateHertz:   sampleRate, // для аудио - 44100
+								AudioChannelCount: channelCount,
 							},
 						},
 					},
@@ -77,7 +77,7 @@ func (r *Recognizer) CloseGRPCConnection() error {
 	return r.grpcConnection.Close()
 }
 
-func (r *Recognizer) StartStream() error {
+func (r *Recognizer) StartStream(sampleRate int64, channelCount int64) error {
 	recognizerClient := stt.NewRecognizerClient(r.grpcConnection)
 	stream, err := recognizerClient.RecognizeStreaming(r.connectionCtx)
 	if err != nil {
@@ -85,14 +85,14 @@ func (r *Recognizer) StartStream() error {
 	}
 
 	// # Задайте настройки распознавания.
-	request := generateSettingsRequest()
+	request := GenerateSettingsRequest(sampleRate, channelCount)
 
 	// Отправьте сообщение с настройками распознавания.
 	if err := stream.Send(&request); err != nil {
 		return err
 	}
 
-	r.currentStream = stream
+	r.CurrentStream = stream
 	return nil
 }
 
@@ -100,7 +100,7 @@ func (r *Recognizer) HandleGRPCResponses() {
 	go func() {
 		fmt.Println("--- START RECEIVE GRPC RESPONSES ---")
 		for {
-			response, err := r.currentStream.Recv()
+			response, err := r.CurrentStream.Recv()
 			if err != nil {
 				log.Fatalf("Error receiving message: %v", err)
 				return
@@ -196,9 +196,9 @@ func (r *Recognizer) GenerateTestStream() {
 		audioChunk := stt.AudioChunk{
 			Data: chunkBytes,
 		}
-		request := generateSettingsRequest()
+		request := GenerateSettingsRequest(int64(sampleRate), 1)
 		request.SetChunk(&audioChunk)
-		if err := r.currentStream.Send(&request); err != nil {
+		if err := r.CurrentStream.Send(&request); err != nil {
 			log.Fatalf("did not connect 4: %v", err)
 		}
 

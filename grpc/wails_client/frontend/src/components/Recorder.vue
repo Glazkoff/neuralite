@@ -1,6 +1,9 @@
 <script setup>
 import { reactive } from "vue";
-import { ProcessAudioBase64 } from "../../wailsjs/go/main/App";
+import {
+  ProcessAudioBase64,
+  StopAudioProcessing
+} from "../../wailsjs/go/main/App";
 import FullScreenBtn from "./FullScreenBtn.vue";
 
 const data = reactive({
@@ -36,12 +39,35 @@ function voiceRecording() {
 
         // Success callback
         .then(stream => {
+          // const audioContext = new AudioContext({ sampleRate: 16000 });
+          // const mediaStreamAudioSourceNode = new MediaStreamAudioSourceNode(
+          //   audioContext,
+          //   { mediaStream: stream }
+          // );
+          // const mediaStreamAudioDestinationNode =
+          //   new MediaStreamAudioDestinationNode(audioContext);
+          // mediaStreamAudioSourceNode.connect(mediaStreamAudioDestinationNode);
+
           data.audioStream = stream;
-          // TODO: const mimeTypes = MediaRecorder.isTypeSupported("audio/wav");
+          let settings = data.audioStream.getAudioTracks()[0].getSettings();
+          console.log("settings", settings);
+          const mimeTypes = MediaRecorder.isTypeSupported("audio/wav");
           data.mediaRecorder = new MediaRecorder(data.audioStream, {
-            audioBitsPerSecond: 128000
-            // mimeType: mimeTypes[0]
+            audioBitsPerSecond:
+              settings["sampleRate"] *
+              settings["channelCount"] *
+              settings["sampleSize"],
+            mimeType: mimeTypes[0]
           });
+
+          // data.audioStream = stream;
+          // ВАЖНО!!!
+
+          // TODO: const mimeTypes = MediaRecorder.isTypeSupported("audio/wav");
+          // data.mediaRecorder = new MediaRecorder(data.audioStream, {
+          //   // audioBitsPerSecond: 128000
+          //   // mimeType: mimeTypes[0]
+          // });
           const sampleRate = data.mediaRecorder.audioBitsPerSecond / (16 * 1);
           console.log("data.mediaRecorder", sampleRate, data.mediaRecorder);
           data.mediaRecorder.start();
@@ -55,13 +81,19 @@ function voiceRecording() {
 
             const reader = new window.FileReader();
             reader.readAsDataURL(blob);
-
             reader.onloadend = function () {
               let base64 = reader.result;
+              console.log("0 - ", base64.split(",")[0]);
+              // console.log("1 - ", base64.split(",")[1]);
               base64 = base64.split(",")[1];
-              console.log(base64.slice(0, 10) + "...");
-
-              // ProcessAudioBase64(base64);
+              console.log("1 - ", base64.slice(0, 10) + "...");
+              ProcessAudioBase64(
+                base64,
+                settings["sampleRate"],
+                settings["sampleSize"],
+                settings["channelCount"],
+                blob["size"]
+              ); // sampleRate int64, sampleSize int64, channelCount int64,
             };
           };
           data.resultText = data.mediaRecorder.state;
@@ -82,6 +114,7 @@ function voiceRecording() {
       data.resultText = "-";
     }
     setElapsedTime();
+    // StopAudioProcessing();
     console.log("close");
   }
 
@@ -114,7 +147,7 @@ window.runtime.EventsOn("get_response", newText => {
 
 <style scoped>
 .result {
-  height: 20px;
+  /* height: 20px; */
   line-height: 20px;
   margin: 1.5rem auto;
 }
