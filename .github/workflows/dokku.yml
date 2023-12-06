@@ -18,7 +18,7 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: "ssh://root@neuralite.ru:22/dtb"
+          git_remote_url: "ssh://dokku@neuralite.ru:22/dtb"
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
       # - id: deploy
       #   name: Deploy to dokku
