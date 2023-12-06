@@ -1,24 +1,30 @@
 name: CI
 
+# yamllint disable-line rule:truthy
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
+      - name: Cloning repo
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - id: deploy
-        name: Deploy to dokku
-        uses: idoberko2/dokku-deploy-github-action@v1
+      - name: Push to dokku
+        uses: dokku/github-action@master
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          dokku-host: "neuralite.ru"
-          app-name: "dtb"
-          git-push-flags: "--force"
+          git_remote_url: "ssh://dokku@neuralite.ru:22/dtb"
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # - id: deploy
+      #   name: Deploy to dokku
+      #   uses: idoberko2/dokku-deploy-github-action@v1
+      #   with:
+      #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     dokku-host: "neuralite.ru"
+      #     app-name: "dtb"
+      #     git-push-flags: "--force"
