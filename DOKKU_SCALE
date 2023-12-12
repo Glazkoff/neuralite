@@ -2,3 +2,4 @@ web=1
 llm-api=1
 worker=1
 beat=1
+langchain=1

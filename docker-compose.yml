@@ -93,14 +93,15 @@ services:
       - db
     hostname: dtb.llm-api
 
-  # nginx:
-  #   image: nginx:stable
-  #   ports:
-  #     - "8000:80"
-  #   volumes:
-  #     - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
-  #   logging:
-  #     driver: none
+  langchain:
+    container_name: dtb.langchain
+    build:
+      context: ./langchain_summ
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    hostname: dtb.langchain
+    mem_limit: 4g
 
 volumes:
   postgres_data:
