@@ -11,6 +11,9 @@
     },
     "beat": {
       "quantity": 1
+    },
+    "langchain": {
+      "quantity": 1
     }
   }
 }
