@@ -101,7 +101,12 @@ services:
     ports:
       - "8080:8080"
     hostname: dtb.langchain
-    mem_limit: 4g
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "4g"
+          pids: 100
 
 volumes:
   postgres_data:

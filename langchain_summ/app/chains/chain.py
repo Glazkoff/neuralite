@@ -5,12 +5,13 @@ from langchain.prompts import PromptTemplate
 
 
 # Create chain
-model = "ai-forever/rugpt3small_based_on_gpt2"
+# model = "ai-forever/rugpt3small_based_on_gpt2"
+model = "AlexWortega/instruct_rugptSmall"
 tokenizer = AutoTokenizer.from_pretrained(model)
 rugpt = HuggingFacePipeline.from_model_id(
     # The name of the model on the HuggingFace server (for example "gpt2" by default) or the path to the model on disk
     # model_id="gpt2",
-    model_id="ai-forever/rugpt3small_based_on_gpt2",
+    model_id=model,
     # Other options are possible: "text2text-generation", "text-generation" (default), "summarization"
     task="text-generation",
     # task="text2text-generation",

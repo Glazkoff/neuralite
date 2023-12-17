@@ -32,6 +32,16 @@ class SummarizationTask(CreateUpdateTracker):
         ordering = ["-created_at"]
 
 
+class LangchainSummarizationTask(SummarizationTask):
+    def __str__(self):
+        return f"Задача суммаризации [Langchain] #{self.pk}"
+
+    class Meta:
+        verbose_name = "Задача суммаризации [Langchain]"
+        verbose_name_plural = "Задачи суммаризации [Langchain]"
+        ordering = ["-created_at"]
+
+
 class VoiceMessage(CreateUpdateTracker):
     user_telegram_msg_id = models.PositiveBigIntegerField("ID сообщения пользователя")
     bot_telegram_msg_id = models.PositiveBigIntegerField("ID сообщения бота", null=True)

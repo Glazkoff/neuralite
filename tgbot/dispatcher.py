@@ -30,6 +30,9 @@ def setup_dispatcher(dp):
     # summarization
     dp.add_handler(CommandHandler("summ", summarization_handlers.begin_summarization))
     dp.add_handler(
+        CommandHandler("q", summarization_handlers.begin_langchain_summarization)
+    )
+    dp.add_handler(
         MessageHandler(
             Filters.text & ~Filters.command, summarization_handlers.begin_summarization
         )
