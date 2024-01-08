@@ -14,21 +14,17 @@ uvicorn = "^0.23.2"
 langserve = {extras = ["server"], version = ">=0.0.30"}
 pydantic = "<2"
 langchain = "^0.0.345"
-transformers = "^4.35.2"
-torch = {version = "*", source = "pytorch-cpu"}
-sentencepiece = "^0.1.99"
-accelerate = "^0.25.0"
-xformers = "^0.0.22.post7"
-
+transformers = "4.36.2"
+torch = "2.1.2"
+sentencepiece = "0.1.99"
+accelerate = "0.25.0"
+xformers = "0.0.23.post1"
+bitsandbytes = "0.41.1"
+peft = "0.7.1"
+scipy = "*"
 
 [tool.poetry.group.dev.dependencies]
 langchain-cli = ">=0.0.15"
-
-
-[[tool.poetry.source]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

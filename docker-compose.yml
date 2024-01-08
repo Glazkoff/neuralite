@@ -103,10 +103,13 @@ services:
     hostname: dtb.langchain
     deploy:
       resources:
-        limits:
-          cpus: "2"
-          memory: "4g"
-          pids: 100
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - /root/.cache/huggingface
 
 volumes:
   postgres_data:

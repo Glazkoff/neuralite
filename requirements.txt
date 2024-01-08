@@ -38,14 +38,3 @@ python-dotenv
 # For storage service
 boto3==1.33.13
 python-multipart
-
-# LangChain
---extra-index-url https://download.pytorch.org/whl/cpu
-langserve[server]==0.0.35
-pydantic==1.10.13
-langchain==0.0.345
-transformers==4.36.0
-torch==2.1.0+cpu
-sentencepiece==0.1.99
-accelerate==0.25.0
-xformers==0.0.22.post7

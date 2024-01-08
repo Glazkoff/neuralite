@@ -2,7 +2,10 @@ FROM python:3.8.10
 
 ENV PYTHONUNBUFFERED=1
 
-RUN mkdir /code
+RUN apt -y update \
+  && apt -y install python3-packaging \ 
+  && apt clean \
+  && mkdir /code
 WORKDIR /code
 
 COPY requirements.txt /code/
