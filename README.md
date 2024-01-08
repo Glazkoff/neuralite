@@ -277,3 +277,7 @@ http://appName.processName:innerPortName
 <!-- Example -->
 http://dtb.llm-api:9001
 ```
+
+```shell
+docker compose -f .\docker-compose-langchain.yml up --build
+```

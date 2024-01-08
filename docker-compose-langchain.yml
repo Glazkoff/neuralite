@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  langchain:
+    container_name: dtb.langchain
+    build:
+      context: ./langchain_summ
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    hostname: dtb.langchain
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: "4g"
+    #       pids: 100
+
+volumes:
+  postgres_data:
