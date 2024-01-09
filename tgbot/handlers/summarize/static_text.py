@@ -3,7 +3,7 @@ summ_wrong_format = (
     f"Чтобы отправить текст на суммаризацию, "
     f"введите команду {summ_command} с текстом, отделённым пробелом.\n"
 )
-langchain_summ_command = "/q"
+langchain_summ_command = "/summ"
 langchain_summ_wrong_format = (
     f"Чтобы отправить текст на суммаризацию, "
     f"введите команду {langchain_summ_command} с текстом, отделённым пробелом.\n"

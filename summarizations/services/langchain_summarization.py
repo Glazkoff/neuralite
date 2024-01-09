@@ -12,7 +12,7 @@ class LangchainSummarizationService:
 
     def summarize(self, text: str) -> (str, str):
         headers = {"Content-Type": "application/json"}
-        data = {"input": {"question": text}, "config": {}, "kwargs": {}}
+        data = {"input": {"context": text}, "config": {}, "kwargs": {}}
 
         try:
             response = requests.post(self.api_url, json=data, headers=headers)

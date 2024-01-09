@@ -28,9 +28,9 @@ def setup_dispatcher(dp):
     Adding handlers for events from Telegram
     """
     # summarization
-    dp.add_handler(CommandHandler("summ", summarization_handlers.begin_summarization))
+    # dp.add_handler(CommandHandler("summ", summarization_handlers.begin_summarization))
     dp.add_handler(
-        CommandHandler("q", summarization_handlers.begin_langchain_summarization)
+        CommandHandler("summ", summarization_handlers.begin_langchain_summarization)
     )
     dp.add_handler(
         MessageHandler(
